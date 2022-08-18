@@ -9,6 +9,9 @@ import (
 	"github.com/ashokgawas/GoWebApp/views"
 )
 
+// getAll is package local and returns all todo entries from db to API response.
+//
+// It returns error incase something fails
 func getAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
@@ -28,7 +31,7 @@ func getAll() http.HandlerFunc {
 					todo := views.Todo{Name: v.Name, Todo: v.Todo, Status: v.Status}
 					todos = append(todos, todo)
 				}
-
+				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				json.NewEncoder(w).Encode(todos)
 			}
@@ -37,6 +40,8 @@ func getAll() http.HandlerFunc {
 	}
 }
 
+// getByName is package local and returns todo entries from db for
+// for the matching [name] passed as query parameter in API
 func getByName() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
@@ -54,7 +59,7 @@ func getByName() http.HandlerFunc {
 				todo := views.Todo{Name: v.Name, Todo: v.Todo, Status: v.Status}
 				todos = append(todos, todo)
 			}
-
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(todos)
 		}

@@ -20,6 +20,7 @@ import (
 	"github.com/ashokgawas/GoWebApp/views"
 )
 
+// create is package local and creates a todo entry in db based on the input passed as json object.
 func create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
@@ -39,6 +40,7 @@ func create() http.HandlerFunc {
 				w.Write([]byte("Exception occured!!"))
 				w.WriteHeader(http.StatusBadRequest)
 			} else {
+				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusCreated)
 				//json.NewEncoder(w).Encode(map[string]string{"id": fmt.Sprint(result.InsertedID)})
 

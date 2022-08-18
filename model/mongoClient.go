@@ -1,3 +1,5 @@
+// Package model contains just [mongoClient.go] class which contains functions establish connection
+// with mongodb
 package model
 
 import (
@@ -12,9 +14,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
+// Mongo connection variables globally defined
+// to set once and use in all functions.
 var mongoClient *mongo.Client
 var mongoContext context.Context
 
+// Connect takes mongodb connection URI as input and
+// returns client, context and cancelFunc mongo related variables required to invoke db.
+// error variable is populated for any connection error
 func Connect(uri string) (*mongo.Client, context.Context, context.CancelFunc, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
@@ -26,6 +33,8 @@ func Connect(uri string) (*mongo.Client, context.Context, context.CancelFunc, er
 	return client, ctx, cancel, err
 }
 
+// Ping is invoked to verify connectivity with mongodb and returns nothing.
+// If application is not connected, error is returned.
 func Ping() error {
 	if err := mongoClient.Ping(mongoContext, readpref.Primary()); err != nil {
 		return err
@@ -35,6 +44,9 @@ func Ping() error {
 	return nil
 }
 
+// CreateTodo is a peristence call to add a row to todo collection.
+//
+// It returns mongo result object for successful insertion or error in case of failure.
 func CreateTodo(todo views.MongoTodo) (*mongo.InsertOneResult, error) {
 	collection := mongoClient.Database("db1").Collection("todo")
 
@@ -46,6 +58,7 @@ func CreateTodo(todo views.MongoTodo) (*mongo.InsertOneResult, error) {
 	return result, error
 }
 
+// GetAllTodo returns all todo entries present in the db
 func GetAllTodo() ([]views.MongoTodo, error) {
 	collection := mongoClient.Database("db1").Collection("todo")
 	var todos []views.MongoTodo
@@ -63,6 +76,7 @@ func GetAllTodo() ([]views.MongoTodo, error) {
 	return todos, nil
 }
 
+// GetByName returns todo entries based on matching name provided in the input.
 func GetByName(name string) ([]views.MongoTodo, error) {
 	collection := mongoClient.Database("db1").Collection("todo")
 	var todos []views.MongoTodo
@@ -80,6 +94,7 @@ func GetByName(name string) ([]views.MongoTodo, error) {
 	return todos, nil
 }
 
+// DeleteByName deletes todo entries for the matching name provided in the input.
 func DeleteByName(name string) (*mongo.DeleteResult, error) {
 	collection := mongoClient.Database("db1").Collection("todo")
 
@@ -90,6 +105,9 @@ func DeleteByName(name string) (*mongo.DeleteResult, error) {
 	}
 }
 
+// CloseConnection closes mongodb connection.
+//
+// It is called from [main] function when the server is stopped.
 func CloseConnection(client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
 	defer cancel()
 
